@@ -1,42 +1,21 @@
 ---
-- name: Deploy Dockerized Nginx Web Server
+- name: Install and start Nginx on RHEL
   hosts: webservers
   become: true
 
   tasks:
-    - name: Install Docker
-      amazon.aws.aws_package:
-        name: docker
+    - name: Install EPEL repository (for nginx)
+      yum:
+        name: epel-release
         state: present
 
-    - name: Start Docker service
+    - name: Install Nginx
+      yum:
+        name: nginx
+        state: present
+
+    - name: Start and enable Nginx
       service:
-        name: docker
+        name: nginx
         state: started
-        enabled: yes
-
-    - name: Create working directory
-      file:
-        path: /home/ec2-user/nginx
-        state: directory
-
-    - name: Copy Dockerfile
-      copy:
-        src: files/Dockerfile
-        dest: /home/ec2-user/nginx/Dockerfile
-
-    - name: Copy index.html
-      copy:
-        src: files/index.html
-        dest: /home/ec2-user/nginx/index.html
-
-    - name: Build Docker image
-      command: docker build -t mynginx /home/ec2-user/nginx
-
-    - name: Run Docker container
-      docker_container:
-        name: nginx-container
-        image: mynginx
-        ports:
-          - "80:80"
-        state: started
+        enabled: true
